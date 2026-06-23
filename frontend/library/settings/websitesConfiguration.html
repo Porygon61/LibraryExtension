@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Settings</title>
+        <link rel="stylesheet" href="/settings/websitesConfiguration.css" />
+    </head>
+    <body>
+        <div id="websiteConfig_Container">
+            <div id="websiteConfig_Nav_Container">
+                <h1>Website Config</h1>
+                <input type="button" value="addConfig" id="addConfigBtn" />
+                <select id="selectWebsiteConfig"></select>
+            </div>
+            <div id="selectorConverter_Panel">
+                <h3>CSS to XPath Quick Converter</h3>
+                <div class="converter-row">
+                    <input
+                        type="text"
+                        id="cssInput"
+                        placeholder="Paste CSS selector here (e.g., div.content > p.text)"
+                    />
+                    <button type="button" id="convertBtn">
+                        Convert & Copy
+                    </button>
+                    <button
+                        type="button"
+                        id="pasteConvertCopyBtn"
+                        style="
+                            background-color: var(--accent-color);
+                            color: white;
+                        "
+                    >
+                        Paste, Convert & Copy
+                    </button>
+                </div>
+                <div id="xpathOutput" class="converter-output">
+                    XPath result will appear here...
+                </div>
+            </div>
+            <div id="dataDisplay_Container"></div>
+            <div class="save_Container">
+                <button id="saveConfigBtn">Save</button>
+            </div>
+            <!-- label gets added next to input when saving and wehn finished saving -->
+        </div>
+        <script src="/settings/websitesConfiguration.js" type="module"></script>
+    </body>
+</html>

@@ -1,0 +1,417 @@
+/* ==========================================================================
+   Global Resets & CSS Variables
+   ========================================================================== */
+:root {
+    --bg-color: #121214;
+    --card-bg: #1a1a1e;
+    --border-color: #2a2a30;
+    --text-main: #e4e4e7;
+    --id-color: #f59e0b;
+    --text-muted: #a1a1aa;
+    --accent-color: #6366f1; /* Indigo */
+    --accent-hover: #4f46e5;
+    --focus-color: #5b0ab8;
+    --required-color: #ef4444;
+    --success-color: #10b981;
+    --readonly-bg: #222226;
+    --editable-bg: #2d2d34;
+    --font-family:
+        system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+        Oxygen, Ubuntu, Cantarell, sans-serif;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    background-color: var(--bg-color);
+    color: var(--text-main);
+    font-family: var(--font-family);
+    padding: 2rem 1rem;
+    line-height: 1.5;
+}
+
+/* ==========================================================================
+   Layout Containers
+   ========================================================================== */
+#websiteConfig_Container {
+    max-width: 1200px; /* Made the whole display wider to fit rows perfectly */
+    margin: 0 auto;
+    background-color: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 2rem;
+    box-shadow:
+        0 4px 6px -1px rgba(0, 0, 0, 0.1),
+        0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    height: 90dvh;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Nav / Header section */
+#websiteConfig_Nav_Container {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 1.5rem;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+    flex-shrink: 0;
+}
+
+#websiteConfig_Nav_Container h1 {
+    font-size: 1.75rem;
+    font-weight: 700;
+    flex-grow: 1;
+}
+
+/* ==========================================================================
+   Converter
+   ========================================================================== */
+
+#selectorConverter_Panel {
+    background-color: rgba(255, 255, 255, 0.03);
+    border: 1px dashed var(--border-color);
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+    flex-shrink: 0;
+}
+#selectorConverter_Panel h3 {
+    font-size: 0.9rem;
+    color: var(--accent-color);
+    margin-bottom: 0.5rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+.converter-row {
+    display: flex;
+    gap: 0.75rem;
+}
+#cssInput {
+    flex: 1;
+    background-color: var(--readonly-bg);
+    border: 1px solid var(--border-color);
+    padding: 0.5rem 0.75rem;
+    border-radius: 6px;
+    color: var(--text-main);
+    outline: none;
+}
+#cssInput:focus {
+    border-color: var(--accent-color);
+}
+.converter-output {
+    margin-top: 0.5rem;
+    font-family: monospace;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    background-color: rgba(0, 0, 0, 0.15);
+    padding: 0.4rem;
+    border-radius: 4px;
+    word-break: break-all;
+}
+
+/* ==========================================================================
+   Form Controls (Buttons, Selects, Inputs)
+   ========================================================================== */
+button,
+input[type="button"] {
+    background-color: var(--accent-color);
+    color: white;
+    border: none;
+    padding: 0.6rem 1.2rem;
+    font-weight: 600;
+    border-radius: 6px;
+    cursor: pointer;
+    transition:
+        background-color 0.2s ease,
+        transform 0.1s ease;
+}
+
+button:hover {
+    background-color: var(--accent-hover);
+}
+
+button:active {
+    transform: scale(0.98);
+}
+
+select {
+    background-color: var(--readonly-bg);
+    color: var(--text-main);
+    border: 1px solid var(--border-color);
+    padding: 0.6rem 2.5rem 0.6rem 1rem;
+    border-radius: 6px;
+    font-size: 0.95rem;
+    cursor: pointer;
+    outline: none;
+}
+
+select:focus {
+    border-color: var(--accent-color);
+}
+
+/* ==========================================================================
+   Dynamic Data Rows Configuration
+   ========================================================================== */
+#dataDisplay_Container {
+    display: grid;
+    grid-template-columns: repeat(
+        12,
+        1fr
+    ); /* Redesigned to 12 columns for precision */
+    gap: 1rem;
+    flex-grow: 1;
+    overflow-y: auto;
+    min-height: 0;
+    padding-right: 0.5rem;
+}
+
+/* Default state: Everyone gets their own full row */
+.dataRow {
+    grid-column: span 12;
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    padding: 1rem;
+    background-color: rgba(255, 255, 255, 0.02);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    transition: border-color 0.2s ease;
+}
+
+.dataRow:hover {
+    border-color: rgba(99, 102, 241, 0.3);
+}
+
+/* --- Row 1 Layout Adjustments --- */
+#row-id {
+    font-weight: bold;
+    grid-column: span 1;
+    min-width: 80px; /* Sized perfectly for ~4 digits + small label */
+}
+#row-id .dataLabel {
+    min-width: auto; /* Overrides global 140px minimum */
+}
+
+#row-websiteID {
+    grid-column: span 2;
+    min-width: 140px; /* Sized perfectly for ~4 digits + 'websiteID' label */
+}
+#row-websiteID .dataLabel {
+    min-width: auto;
+}
+#row-websiteID .dataValueInput {
+    flex: 1 1 50px; /* Overrides standard input width restrictions */
+    min-width: 0;
+}
+
+#row-name {
+    grid-column: span 9; /* Fills remaining space on Row 1 */
+}
+
+/* --- Row 2 Layout Adjustments --- */
+#row-domain {
+    grid-column: span 6; /* Half-width on Row 2 */
+}
+#row-baseUrl {
+    grid-column: span 6; /* Half-width on Row 2 */
+}
+
+/* Text & Labels inside rows */
+.dataLabel {
+    font-size: 1rem;
+    font-weight: 600;
+    text-transform: capitalize;
+    letter-spacing: 0.05em;
+    color: var(--text-muted);
+    min-width: 140px;
+}
+
+/* Handle nested structure keys closer to their inputs */
+.dataRow .dataLabel ~ .dataLabel {
+    min-width: auto;
+    color: var(--accent-color);
+    margin-left: 0.5rem;
+}
+
+.dataValue {
+    font-family: monospace;
+    color: var(--text-muted);
+    background-color: rgba(0, 0, 0, 0.2);
+    padding: 0.6rem 1rem;
+    border-radius: 4px;
+    font-size: 1rem;
+}
+
+/* Input Fields inside rows */
+.dataRow input[type="text"],
+.dataValueInput {
+    background-color: var(--readonly-bg);
+    color: var(--text-main);
+    border: 1px solid var(--border-color);
+    padding: 0.7rem 1rem;
+    border-radius: 6px;
+    font-size: 1rem;
+    transition: background-color 0.2s ease;
+    padding: 0.5rem 0.75rem;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    outline: none;
+    transition: all 0.2s ease;
+    flex: 1 1 200px; /* Allow fields to expand dynamically */
+}
+
+/* Style for editable field when active/clicked */
+.dataValueInput:focus,
+#dataDisplay_Container select:focus {
+    background-color: var(--editable-bg);
+    border-color: var(--accent-color);
+    box-shadow: 0 0 0 4px var(--focus-color); /* Stronger high-visibility glow */
+    color: #ffffff;
+}
+
+/* Checkboxes and inline text tags */
+.dataRow span:not(.dataLabel):not(.dataValue) {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    margin-left: 0.5rem;
+}
+
+.dataValueCheckbox {
+    width: 16px;
+    height: 16px;
+    accent-color: var(--accent-color);
+    cursor: pointer;
+}
+
+#row-id .dataValue {
+    color: var(--id-color); /* Bright Amber/Orange */
+    background-color: rgba(245, 158, 11, 0.1);
+    border: 1px solid rgba(245, 158, 11, 0.3);
+    font-weight: bold;
+}
+
+/* ==========================================================================
+   Info rows internal layout configurations (info_...)
+   ========================================================================== */
+div[id^="row-info_"] {
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    gap: 0.75rem 1rem;
+    align-items: center;
+}
+
+/* Strip default flex margins inside the grid-configured info rows */
+div[id^="row-info_"] span:not(.dataLabel):not(.dataValue) {
+    margin-left: 0;
+}
+div[id^="row-info_"] .dataValueInput {
+    width: 100%;
+    flex: none;
+}
+
+/* Sub-Row 1: Label + Both Checkboxes aligned together at the start */
+div[id^="row-info_"] .dataLabel {
+    grid-column: span 3;
+    grid-row: 1;
+    min-width: auto;
+}
+div[id^="row-info_"] span:nth-of-type(2) {
+    /* "takeFirst?" description */
+    grid-column: span 2;
+    grid-row: 1;
+    justify-self: start;
+}
+div[id^="row-info_"] .dataValueCheckbox[data-prop="takeFirst"] {
+    grid-column: span 1;
+    grid-row: 1;
+    justify-self: start;
+}
+div[id^="row-info_"] span:nth-of-type(3) {
+    /* "isArray?" description */
+    grid-column: span 2;
+    grid-row: 1;
+    justify-self: start;
+}
+div[id^="row-info_"] .dataValueCheckbox[data-prop="isArray"] {
+    grid-column: span 1;
+    grid-row: 1;
+    justify-self: start;
+}
+
+/* Sub-Row 2: XPath Selector row */
+div[id^="row-info_"] .dataValueInput[data-prop="selector"] {
+    grid-column: span 12;
+    grid-row: 2;
+}
+
+/* Sub-Row 3: Element Filter row */
+div[id^="row-info_"] span:nth-of-type(4) {
+    /* "El Filter" label */
+    grid-column: span 2;
+    grid-row: 3;
+}
+div[id^="row-info_"] .dataValueInput[data-prop="elementFilter"] {
+    grid-column: span 10;
+    grid-row: 3;
+}
+
+/* Sub-Row 4: Content Filter row */
+div[id^="row-info_"] span:nth-of-type(5) {
+    /* "Content Filter" label */
+    grid-column: span 2;
+    grid-row: 4;
+}
+div[id^="row-info_"] .dataValueInput[data-prop="contentFilter"] {
+    grid-column: span 10;
+    grid-row: 4;
+}
+
+/* ==========================================================================
+   Save Section
+   ========================================================================== */
+.save_Container {
+    margin-top: 2rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border-color);
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 1rem;
+    flex-shrink: 0;
+}
+
+.save_Container button {
+    background-color: var(--success-color);
+    padding: 0.75rem 2rem;
+    font-size: 1rem;
+}
+
+.save_Container button:hover {
+    background-color: #059669;
+}
+
+/* Style for saving confirmation label mentioned in your HTML comment */
+.save_Container .status-label {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateX(5px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}

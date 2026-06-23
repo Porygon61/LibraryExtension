@@ -1,0 +1,51 @@
+{
+    "name": "Catze's Library",
+    "description": "A Chrome extension to manage manga bookmarks.",
+    "version": "1.0",
+    "manifest_version": 3,
+    "icons": {
+        "16": "media/logo.png",
+        "48": "media/logo.png",
+        "128": "media/logo.png"
+    },
+    "background": {
+        "service_worker": "background.js",
+        "type": "module"
+    },
+    "permissions": [
+        "storage",
+        "activeTab",
+        "scripting",
+        "alarms",
+        "tabs",
+        "contextMenus"
+    ],
+    "action": {
+        "default_popup": "./popup/popup.html",
+        "default_icon": "media/logo.png"
+    },
+    "host_permissions": [
+        "http://*/*",
+        "https://*/*"
+    ],
+    "content_scripts": [
+        {
+            "matches": [
+                "*://*.mangago.me/*",
+                "*://*.mangadex.org/*",
+                "*://*.manhuaus.com/*",
+                "*://*.toongod.org/*",
+                "*://*.asurascans.com/*",
+                "*://*.rizzcomic.com/*",
+                "*://*.philiascans.org/*",
+                "*://*.manhwaclan.com/*",
+                "*://*.mangaupdates.com/*",
+                "*://*.utoon.net/*"
+            ],
+            "js": [
+                "content.js"
+            ],
+            "run_at": "document_idle"
+        }
+    ]
+}

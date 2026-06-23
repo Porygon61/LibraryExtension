@@ -1,0 +1,108 @@
+settings:
+    port: 6767 # default: 6767 --> Port to run the server on
+    insertion_Settings:
+        enable_ReadingPage_Features: true # default: true --> Enable ProgressSync Button, etc. Insertion on Pages
+        enable_InfoPage_Features: true # default: true --> Enable QuickAdd Button Insertion on Pages
+    dataValidation_Settings: # only used for MergeWindow (~ when adding a Manga)
+        manualValidation: # Things that get get validated manually in MergeWindow
+            - coverImg
+            - title
+            - altTitle
+            - description
+            - mapping
+            - releaseYear
+        noValidation: # Things that don't get validated
+            - latestChapter
+            - latestChapter_releaseDate
+            - rating
+            - timestamp
+
+database:
+    filename: catze_Library.sqlite
+    tables:
+        bookmarks:
+            id: INTEGER PRIMARY KEY AUTOINCREMENT
+            currentCh: TEXT NOT NULL
+            title: TEXT NOT NULL
+            altTitle: TEXT
+            coverImgID: INTEGER NOT NULL # should default to the placeholder image tagID
+            latestChapter: TEXT DEFAULT 'N/A'
+            latestChapter_releaseDate: TEXT DEFAULT 'N/A'
+            rating: REAL DEFAULT NULL
+            releaseYear: TEXT DEFAULT NULL
+            status: TEXT DEFAULT 'N/A'
+            readingStatus: TEXT DEFAULT 'Not read yet' #Personal way of saying to what degree you've read the manga (not read yet, reading,etc.)
+            description: TEXT DEFAULT 'N/A'
+            nsfw: INTEGER DEFAULT 0 # 0 = false, 1 = true
+            timestamp: DATETIME DEFAULT (datetime('now', 'localtime'))
+            FOREIGN KEY (coverImgID): REFERENCES mapping(id)
+
+        urls:
+            id: INTEGER PRIMARY KEY AUTOINCREMENT
+            bookmarkID: INTEGER NOT NULL
+            url: TEXT UNIQUE NOT NULL
+            websiteID: INTEGER NOT NULL
+            FOREIGN KEY (bookmarkID): REFERENCES bookmarks(id) ON DELETE CASCADE
+            FOREIGN KEY (websiteID): REFERENCES mapping(id) ON DELETE SET NULL
+
+        mapping:
+            id: INTEGER PRIMARY KEY AUTOINCREMENT
+            name: TEXT UNIQUE NOT NULL
+            type: TEXT NOT NULL # genre, artist, author, cover, website
+            extraData: TEXT # Things such as website information(link to favicon, baseUrl, domain), or nsfw , or if cover(link to cover)
+
+        mappingAliases:
+            id: INTEGER PRIMARY KEY AUTOINCREMENT
+            tagID: INTEGER NOT NULL
+            alias: TEXT NOT NULL
+            extraData: TEXT # Things such as website information, or nsfw
+            FOREIGN KEY (tagID): REFERENCES mapping(id) ON DELETE CASCADE
+
+        bookmarkmapping:
+            primaryKey: [bookmarkID, tagID]
+            bookmarkID: INTEGER NOT NULL
+            tagID: INTEGER NOT NULL
+            FOREIGN KEY (bookmarkID): REFERENCES bookmarks(id) ON DELETE CASCADE
+            FOREIGN KEY (tagID): REFERENCES mapping(id) ON DELETE CASCADE
+
+        updateQueue:
+            id: INTEGER PRIMARY KEY AUTOINCREMENT
+            bookmarkID: INTEGER NOT NULL
+            entryData: TEXT NOT NULL
+            entryType: TEXT NOT NULL # update(merge) or add(only check altTitles)
+            sourceUrl: TEXT NOT NULL
+            timestamp: DATETIME DEFAULT (datetime('now', 'localtime'))
+            FOREIGN KEY (bookmarkID): REFERENCES bookmarks(id) ON DELETE CASCADE
+
+        logs:
+            id: INTEGER PRIMARY KEY AUTOINCREMENT
+            action: TEXT NOT NULL
+            message: TEXT NOT NULL
+            data: TEXT
+            timestamp: DATETIME DEFAULT (datetime('now', 'localtime'))
+
+        websites: # all "info_..." contains: selector(xpath only), take_FirstMatch, elementFilter, contentFilter
+            id: INTEGER PRIMARY KEY AUTOINCREMENT
+            websiteID: INTEGER NOT NULL
+            name: TEXT UNIQUE NOT NULL
+            domain: TEXT UNIQUE NOT NULL
+            baseUrl: TEXT NOT NULL
+            slugCleaner: TEXT
+            siteStructure: TEXT NOT NULL # infoPage or readingPage
+            info_mangaUrl: TEXT
+            info_chapterList_Elements: TEXT
+            info_currentChapter: TEXT
+            info_coverImg: TEXT
+            info_title: TEXT
+            info_altTitle: TEXT
+            info_description: TEXT
+            info_type: TEXT
+            info_releaseYear: TEXT
+            info_status: TEXT
+            info_rating: TEXT
+            info_author: TEXT
+            info_artist: TEXT
+            info_genres: TEXT
+            info_latestChapter: TEXT
+            info_latestChapter_releaseDate: TEXT
+            FOREIGN KEY (websiteID): REFERENCES mapping(id) ON DELETE RESTRICT
