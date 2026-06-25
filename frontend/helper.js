@@ -72,34 +72,22 @@ export function getPageType(url, siteConfig) {
     return "unknown";
 }
 
-export async function getConfigs(domain) {
+export async function getConfigs(domain = null) {
     let config = null;
     let websitesConfig = null;
     let currentSiteConfig = null;
-
     try {
-        const localConfig = await chrome.storage.local.get(["config"]);
-        if (localConfig.config) {
-            config = localConfig.config;
-        } else {
-            // Fallback if background script hasn't cached it yet
-            const configRes = await fetch(
-                "http://localhost:6767/system/config",
-            );
-            config = await configRes.json();
-        }
-        const localWebsiteConfig = await chrome.storage.local.get([
-            "websiteConfig",
-        ]);
-        if (localWebsiteConfig.websiteConfig) {
-            websitesConfig = localWebsiteConfig.websiteConfig;
-        } else {
-            const websiteConfigRes = await fetch(
-                "http://localhost:6767/system/websitesConfig",
-            );
-            const resData = await websiteConfigRes.json();
-            websitesConfig = resData.success ? resData.data : {};
-        }
+        const configRes = await fetch(
+            "http://localhost:6767/system/config",
+        );
+        config = await configRes.json();
+
+        const websiteConfigRes = await fetch(
+            "http://localhost:6767/system/websitesConfig",
+        );
+        const resData = await websiteConfigRes.json();
+        websitesConfig = resData.success ? resData.data : {};
+
     } catch (err) {
         console.error("Error fetching configs:", err);
         return { config: null, websitesConfig: null, currentSiteConfig: null };

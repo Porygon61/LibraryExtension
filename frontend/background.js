@@ -1,4 +1,4 @@
-import { execScraper } from "./popup/scraper.js";
+import { execScraper } from "./scraper.js";
 import { getCleanUrl, getPageType, getConfigs } from "./helper.js";
 
 chrome.runtime.onInstalled.addListener(() => {
@@ -6,15 +6,15 @@ chrome.runtime.onInstalled.addListener(() => {
 
     chrome.contextMenus.create({
         id: "checkLibraryContextMenu",
-        title: "Check Manga in Library",
+        title: "Search in Library",
         contexts: ["link"],
     });
 });
 
 function updateBadge(connected) {
-    const text = connected ? "ON" : "OFF";
+    //const text = connected ? "ON" : "OFF";
     const color = connected ? "#4CAF50" : "#F44336";
-    chrome.action.setBadgeText({ text: text });
+    //chrome.action.setBadgeText({ text: text });
     chrome.action.setBadgeBackgroundColor({ color: color });
     chrome.storage.local.set({ isReachable: connected });
 }
@@ -37,21 +37,13 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
                 `popup/popup.html?url=${encodeURIComponent(targetUrl)}`,
             ),
             type: "popup",
-            width: 380,
-            height: 620,
+            height: 370,
+            width: 500
         });
     }
 });
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-    if (request.action === "infoPageButton_clicked") {
-        const tabId = sender.tab.id;
-        const url = sender.tab.url;
-        handleBackgroundSync(url, tabId).then((success) =>
-            sendResponse({ success: success }),
-        );
-        return true;
-    }
     if (request.action === "checkServer") checkConnection();
     if (request.action === "addWebsite") {
         const { domain, name } = request;
@@ -66,82 +58,36 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
             }),
         });
     }
+    if (request.action === "runScraper") {
+        const baseUrl = request.baseUrl;
+        const pageType = request.pageType;
+        if (pageType === "readingPage") {
+            const { curCh, latestCh } = execScraper(baseUrl, sender.tab.id, pageType);
+            if (!curCh || !latestCh) return sendResponse({ success: false });
+            sendResponse({ success: true, result: { curCh: curCh, latestCh: latestCh } });
+        } else if (pageType === "infoPage") {
+            execScraper(null, pageType).then((success) => sendResponse({ success: true }));
+        }
+    }
+    if (request.action === "getConfigs") {
+        const domain = request.domain;
+        const { config, websitesConfig, currentSiteConfig } = getConfigs(domain);
+        sendResponse({ success: true, result: { config, websitesConfig, currentSiteConfig } });
+    }
+    if (request.action === "getCleanUrl") {
+        const url = request.url;
+        const pageType = request.pageType;
+        const siteConfig = request.siteConfig;
+        const cleanUrl = getCleanUrl(url, siteConfig, pageType, sender.tab.id);
+        sendResponse({ success: true, result: cleanUrl });
+    }
+    if (request.action === "getPageType") {
+        const url = request.url;
+        const siteConfig = request.siteConfig;
+        const pageType = getPageType(url, siteConfig);
+        sendResponse({ success: true, result: pageType });
+    }
 });
 
-// TODO : Check, only pasted in
-async function handleBackgroundSync(tabUrl, tabId) {
-    let config = null;
-    let websitesConfig = null;
-    let siteConfig = null;
-    try {
-
-        const domain = new URL(tabUrl).hostname.replace("www.", "");
-        ({ config, siteConfig, currentSiteConfig } = getConfigs(domain));
-
-        const pageType = getPageType(tabUrl, siteConfig);
-        if (!siteConfig) return false;
-
-        let mangaIdUrl = tabUrl;
-
-        const cleanUrl = await getCleanUrl(tabUrl, siteConfig, pageType, tabId);
-        if (cleanUrl) {
-            mangaIdUrl = cleanUrl;
-        }
-
-        const entryRes = await fetch(
-            `http://localhost:3000/data/library/search`,
-            {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ url: mangaIdUrl }),
-            },
-        );
-        const existingEntry = await entryRes.json();
-        const currentProgress = existingEntry?.currentCh || "N/A";
-        const dbColumns = Object.keys(config.database.tables.bookmarks);
-
-        chrome.scripting.executeScript(
-            {
-                target: { tabId: tabId },
-                func: execScraper,
-                args: [masterConfig, domain],
-            },
-            async (results) => {
-                const scraped = results[0]?.result;
-
-                if (scraped && !scraped.Error) {
-                    let filteredScraped = {};
-                    dbColumns.forEach((col) => {
-                        if (scraped[col] !== undefined) {
-                            filteredScraped[col] = scraped[col];
-                        }
-                    });
-
-                    const syncedEntry = {
-                        ...filteredScraped,
-                        url: mangaIdUrl,
-                        currentCh: currentProgress,
-                    };
-                    const res = await fetch(
-                        "http://localhost:6767/library/entry",
-                        {
-                            method: "POST",
-                            headers: { "Content-Type": "application/json" },
-                            body: JSON.stringify({
-                                url: mangaIdUrl,
-                                entry: syncedEntry,
-                            }),
-                        },
-                    );
-
-                    if (!res.ok) throw new Error("Server returned an error");
-                }
-            },
-        );
-        return true;
-    } catch (err) {
-        return false;
-    }
-}
 
 checkConnection();

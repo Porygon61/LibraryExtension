@@ -21,5 +21,10 @@ module.exports = (db) => {
         });
     });
 
+    router.patch("/entry", (req, res) => {
+        const { url, updates } = req.body;
+        
+    })
+
     return router;
 };

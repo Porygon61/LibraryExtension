@@ -46,6 +46,12 @@ async function renderWebsiteDataEditor() {
 
     constructHtml(dataDisplay_Container, dataColumns);
 
+    dataDisplay_Container.addEventListener("input", (e) => {
+        if (e.target.matches('input[data-prop="selector"]')) {
+            toggleInfoDependentFields(e.target);
+        }
+    });
+
     const addConfigBtn = document.getElementById("addConfigBtn");
 
     const websiteData = await fetchWebsiteData();
@@ -85,6 +91,13 @@ async function renderWebsiteDataEditor() {
     selectElement.addEventListener("change", (e) => {
         populateHtml(websiteData[e.target.value]);
     });
+
+    const homeBtn = document.getElementById("btnHome");
+    homeBtn.addEventListener("click", () => {
+        window.location.href = "http://localhost:6767/home";
+    })
+
+
 
     const saveConfigBtn = document.getElementById("saveConfigBtn");
     saveConfigBtn.addEventListener("click", async () => {
@@ -193,6 +206,13 @@ async function renderWebsiteDataEditor() {
                 const elFilterValue = elFilterInput?.value || "";
                 const contentFilterValue = contentFilterInput?.value || "";
 
+                if (selectorValue === "") {
+                    takeFirstValue = false;
+                    isArrayValue = false;
+                    elFilterValue = "";
+                    contentFilterValue = "";
+                }
+
                 const selectorOld = selectorInput?.getAttribute("old-value") || "";
                 const takeFirstOld = takeFirstCheckbox?.getAttribute("old-value") === "true";
                 const isArrayOld = isArrayCheckbox?.getAttribute("old-value") === "true";
@@ -286,7 +306,7 @@ function constructHtml(container, dataColumns) {
                     <div class="dataRow" id=row-${key}>
                         <span class="dataLabel" >${key}: <span style="color: red;">*</span></span>
                         <select class="dataValueInput" data-key="${key}" old-value="" required >
-                            <option value="">-- Select Website --</option>
+                            <option value="">Select Website</option>
                             ${options}
                         </select>
                     </div>
@@ -444,6 +464,9 @@ function populateHtml(selectedWebsiteData) {
             input.setAttribute("old-value", (typeof value === "object") ? JSON.stringify(value) : value);
         }
     });
+    document.querySelectorAll('input[data-prop="selector"]').forEach(selectorInput => {
+        toggleInfoDependentFields(selectorInput);
+    });
 }
 
 function convertCssToXpath(css) {
@@ -534,6 +557,24 @@ function cleanUrlParams() {
         url.searchParams.delete("new");
         window.history.replaceState({}, "", url);
     }
+}
+
+function toggleInfoDependentFields(selectorInput) {
+    if (!selectorInput) return;
+    const row = selectorInput.closest('.dataRow');
+    if (!row) return;
+
+    const hasSelector = selectorInput.value.trim() !== "";
+    const dependents = row.querySelectorAll('input[data-prop]:not([data-prop="selector"])');
+
+    dependents.forEach(dep => {
+        dep.disabled = !hasSelector;
+        // Auto-clear values if the selector is empty
+        if (!hasSelector) {
+            if (dep.type === 'checkbox') dep.checked = false;
+            else dep.value = "";
+        }
+    });
 }
 
 document.addEventListener("DOMContentLoaded", async () => {

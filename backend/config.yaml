@@ -91,7 +91,7 @@ database:
             siteStructure: TEXT NOT NULL # infoPage or readingPage
             info_mangaUrl: TEXT
             info_chapterList_Elements: TEXT
-            info_currentChapter: TEXT
+            info_currentCh: TEXT
             info_coverImg: TEXT
             info_title: TEXT
             info_altTitle: TEXT

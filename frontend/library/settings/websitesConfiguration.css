@@ -213,7 +213,7 @@ select:focus {
 }
 
 #row-name {
-    grid-column: span 9; /* Fills remaining space on Row 1 */
+    grid-column: span 8; /* Fills remaining space on Row 1 */
 }
 
 /* --- Row 2 Layout Adjustments --- */
@@ -296,6 +296,13 @@ select:focus {
     background-color: rgba(245, 158, 11, 0.1);
     border: 1px solid rgba(245, 158, 11, 0.3);
     font-weight: bold;
+}
+
+.dataValueInput:disabled,
+.dataValueCheckbox:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+    background-color: rgba(0, 0, 0, 0.4);
 }
 
 /* ==========================================================================

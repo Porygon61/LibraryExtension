@@ -1,4 +1,4 @@
-import { execScraper } from "./scraper.js";
+import { execScraper } from "../scraper.js";
 import { getCleanUrl, getPageType, getConfigs } from "../helper.js";
 
 let currentUrl = "";
@@ -147,17 +147,43 @@ async function init() {
             }
         })
         .catch(() => showNoData());
+
+    document.getElementById("btnEdit").addEventListener("click", () => {
+        if (!currentEntry) return;
+        window.open(`http://localhost:6767/library/manga/${currentEntry.id}/edit`, "_blank");
+    });
+
+    document.getElementById("btnDelete").addEventListener("click", () => {
+        if (!currentEntry) return;
+        if (confirm("Are you sure you want to delete this entry?")) {
+            fetch(`http://localhost:6767/library/entry`, {
+                method: "DELETE",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ id: currentEntry.id }),
+            });
+            showNoData();
+        }
+    });
+
+    document.getElementById("btnManualAdd").addEventListener("click", () => {
+        window.open(`http://localhost:6767/library/manga/add`, "_blank");
+    });
+
+    document.getElementById("btnSettings").addEventListener("click", () => {
+        window.open(`http://localhost:6767/settings`, "_blank");
+    });
 }
 
 function renderTracker(entry) {
     currentEntry = entry;
 
-    document.getElementById("curCh").innerText = entry.current_chapter || "N/A";
+    document.getElementById("curCh").innerText = entry.currentCh || "N/A";
 
     const coverContainer = document.getElementById("coverContainer");
     coverContainer.innerHTML = "";
-    if (entry.coverImageID) {
+    if (entry.coverImgID) {
         const link = document.createElement("a");
+        // TODO add page (not created yet and also add route)
         link.href = "http://localhost:6767/library/manga/" + entry.id;
         link.target = "_blank";
         link.className = "cover-link";
@@ -166,7 +192,7 @@ function renderTracker(entry) {
         fetch("http://localhost:6767/mapping/cover", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ id: entry.coverImageID }),
+            body: JSON.stringify({ id: entry.coverImgID }),
         })
             .then((res) => res.json())
             .then((tag) => {
@@ -187,18 +213,38 @@ function renderTracker(entry) {
     meta.innerHTML = "";
 
     Object.entries(entry).forEach(([key, val]) => {
-        if (["id", "currentChapter", "coverImage", "nsfw"].includes(key))
+        if (["id", "currentCh", "coverImage", "nsfw"].includes(key))
             return;
-
-        let displayVal = val;
-        try {
-            let parsed = JSON.parse(val);
-            if (Array.isArray(parsed)) displayVal = parsed.join(", ");
-        } catch (e) { }
 
         const div = document.createElement("div");
         div.className = "info-row";
-        div.innerHTML = `<div class="info-label">${key.replace(/_/g, " ")}</div><div class="info-value">${displayVal || "---"}</div>`;
+        div.innerHTML = `<div class="info-label">${key.replace(/_/g, " ")}</div>`;
+        let displayVal = val;
+        try {
+            let parsed = JSON.parse(val);
+            if (Array.isArray(parsed)) {
+                const array = document.createElement("div");
+                array.className = "array-container";
+                parsed.forEach((item) => {
+                    const span = document.createElement("span");
+                    span.className = "array-item";
+                    span.innerText = item;
+                    array.appendChild(span);
+                });
+                div.appendChild(array);
+            } else {
+                throw new Error();
+            }
+        } catch (e) {
+            const value = document.createElement("div");
+            value.className = "info-value";
+            value.innerText = displayVal || "-";
+            div.appendChild = value;
+        }
+
+
+
+
         meta.appendChild(div);
     });
 }
@@ -215,35 +261,6 @@ function showNoData() {
         "<center style='color:#999; padding:20px;'>No data found for this URL.</center>";
 }
 
-document.getElementById("btnEdit").addEventListener("click", () => {
-    if (!currentEntry) return;
-    chrome.runtime.sendMessage({
-        action: "editEntry",
-        entry: currentEntry,
-    });
-});
-
-document.getElementById("btnDelete").addEventListener("click", () => {
-    if (!currentEntry) return;
-    if (confirm("Are you sure you want to delete this entry?")) {
-        fetch(`http://localhost:6767/library/entry`, {
-            method: "DELETE",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ id: currentEntry.id }),
-        });
-        showNoData();
-    }
-});
-
-document.getElementById("btnAdd").addEventListener("click", () => {
-    chrome.runtime.sendMessage({
-        action: "addEntry",
-    });
-});
-
-document.getElementById("btnSettings").addEventListener("click", () => {
-    chrome.runtime.sendMessage({ action: "openSettings" });
-});
 
 window.addEventListener("blur", () => {
     const urlParams = new URLSearchParams(window.location.search);
